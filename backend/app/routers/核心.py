@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from app.services import 目录, 左装载, 右装载, 对齐, 结论, 夹具, 统计, 说明
+from app.modules.对齐窗口裁剪 import 核心 as 窗裁
 
 路由 = APIRouter()
 
@@ -13,7 +14,10 @@ def api_轨规():
 
 @路由.post("/api/轨规")
 def api_改轨规(体: dict):
-    return 目录.改轨规(体)
+    try:
+        return 目录.改轨规(体)
+    except ValueError as e:
+        raise HTTPException(400, str(e))
 
 @路由.get("/api/源登记")
 def api_源():
@@ -39,6 +43,14 @@ def api_悬():
 def api_结论列表():
     return 目录.结论列表()
 
+@路由.get("/api/窗口裁剪")
+def api_窗口裁剪():
+    return 窗裁.裁剪列表()
+
+@路由.get("/api/旁路账册")
+def api_旁路账册():
+    return 窗裁.旁路列表()
+
 @路由.get("/api/夹具")
 def api_夹具():
     return 夹具.列表()
@@ -51,19 +63,19 @@ def api_左装(体: dict):
 def api_右装(体: dict):
     return 右装载.装一批(体)
 
-@路由.post("/api/左轨/夹具/{名}")
-def api_左夹(名: str):
+@路由.post("/api/左轨/夹具/{name}")
+def api_左夹(name: str):
     try:
-        return 左装载.装一批(夹具.读取(名))
+        return 左装载.装一批(夹具.读取(name))
     except FileNotFoundError:
-        raise HTTPException(404, 名)
+        raise HTTPException(404, name)
 
-@路由.post("/api/右轨/夹具/{名}")
-def api_右夹(名: str):
+@路由.post("/api/右轨/夹具/{name}")
+def api_右夹(name: str):
     try:
-        return 右装载.装一批(夹具.读取(名))
+        return 右装载.装一批(夹具.读取(name))
     except FileNotFoundError:
-        raise HTTPException(404, 名)
+        raise HTTPException(404, name)
 
 @路由.post("/api/对齐/跑")
 def api_对齐():

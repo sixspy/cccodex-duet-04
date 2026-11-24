@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 from app.db import 连接
+from app.modules.对齐窗口裁剪 import 核心 as 窗裁
 
 建表 = """
 CREATE TABLE IF NOT EXISTS 轨规 (
@@ -76,6 +77,7 @@ def 此刻() -> str:
 def 初始化库() -> None:
     conn = 连接()
     conn.executescript(建表)
+    窗裁.建表(conn)
     if conn.execute("SELECT COUNT(*) AS c FROM 轨规").fetchone()["c"] == 0:
         for k, v in {
             "站名": "对拍",
@@ -86,6 +88,7 @@ def 初始化库() -> None:
             "去皮": "双源键对齐管道",
         }.items():
             conn.execute("INSERT INTO 轨规(键, 值) VALUES (?, ?)", (k, v))
+    窗裁.确保窗规(conn)
     if conn.execute("SELECT COUNT(*) AS c FROM 源登记").fetchone()["c"] == 0:
         conn.execute(
             "INSERT INTO 源登记(源键,轨别,名称,说明) VALUES (?,?,?,?)",

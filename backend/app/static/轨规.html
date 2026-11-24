@@ -22,6 +22,7 @@
           <a href="/对拍结论.html">对拍结论</a>
           <a href="/源登记.html">源登记</a>
           <a href="/轨规.html" class="亮">轨规</a>
+          <a href="/窗口裁剪.html">窗口裁剪</a>
       </nav>
     </header>
     <main class="主">
@@ -34,6 +35,16 @@
             <label>站名 <input id="站名" style="width:120px"/></label>
             <button id="存">保存</button>
           </div>
+          <div class="工具条">
+            <label>对齐窗起 <input id="窗起" style="width:180px" placeholder="2026-11-23T00:00:00Z"/></label>
+            <label>对齐窗止 <input id="窗止" style="width:180px" placeholder="2026-11-23T23:59:59Z"/></label>
+            <label>窗外形态
+              <select id="形态">
+                <option value="旁路">旁路</option>
+                <option value="打标">打标</option>
+              </select>
+            </label>
+          </div>
           <pre class="报" id="报"></pre>
         </div>
         <div>
@@ -42,6 +53,10 @@
             <li>对齐键默认业务键；同键多笔先汇总再比。</li>
             <li>容差分内算对齐，否则金额不符。</li>
             <li>仅单边有键 → 对齐差记左缺/右缺，并写入悬账单。</li>
+            <li>窗起/窗止留空即不裁剪；含边界。窗外事件按形态择路：</li>
+            <li>旁路 —— 进旁路账册，不进对齐差现行集；</li>
+            <li>打标 —— 仍写对齐差并打窗外标，不写旁路账册。</li>
+            <li>改窗与跑对齐互斥；改窗后旧裁剪行 valid=0，须重跑对齐。</li>
           </ul>
         </div>
       </section>
@@ -54,9 +69,18 @@
   const s = await get("/api/轨规");
   document.getElementById("容差").value = s.金额容差分 || 0;
   document.getElementById("站名").value = s.站名 || "对拍";
+  document.getElementById("窗起").value = s.对齐窗起 || "";
+  document.getElementById("窗止").value = s.对齐窗止 || "";
+  document.getElementById("形态").value = s.窗外形态 || "旁路";
   document.getElementById("报").textContent = JSON.stringify(s, null, 2);
   document.getElementById("存").onclick = async () => {
-    const body = { 金额容差分: document.getElementById("容差").value, 站名: document.getElementById("站名").value };
+    const body = {
+      金额容差分: document.getElementById("容差").value,
+      站名: document.getElementById("站名").value,
+      对齐窗起: document.getElementById("窗起").value.trim(),
+      对齐窗止: document.getElementById("窗止").value.trim(),
+      窗外形态: document.getElementById("形态").value,
+    };
     document.getElementById("报").textContent = JSON.stringify(await post("/api/轨规", body), null, 2);
   };
 })();
